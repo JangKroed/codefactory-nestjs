@@ -1,4 +1,13 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
 
 /**
@@ -61,5 +70,59 @@ export class PostsController {
     if (!post) throw new NotFoundException();
 
     return post;
+  }
+
+  @Post()
+  postPost(
+    @Body('author') author: string,
+    @Body('title') title: string,
+    @Body('content') content: string,
+  ): PostModel {
+    const post = {
+      id: posts.at(-1).id + 1,
+      author,
+      title,
+      content,
+      likeCount: 0,
+      commentCount: 0,
+    };
+
+    posts.push(post);
+
+    return post;
+  }
+
+  @Put(':id')
+  putPost(
+    @Param('id') id: string,
+    @Body('author') author?: string,
+    @Body('title') title?: string,
+    @Body('content') content?: string,
+  ): PostModel[] {
+    const post = posts.find((post) => post.id === Number(id));
+
+    if (!post) throw new NotFoundException();
+
+    if (author) post.author = author;
+    if (title) post.title = title;
+    if (content) post.content = content;
+
+    for (let item of posts) {
+      if (item.id === post.id) {
+        item = post;
+        break;
+      }
+    }
+
+    return posts;
+  }
+
+  @Delete(':id')
+  deletePost(@Param('id') id: string): PostModel[] {
+    const post = posts.find((post) => post.id === Number(id));
+
+    if (!post) throw new NotFoundException();
+
+    return posts.filter((post) => post.id !== Number(id));
   }
 }
